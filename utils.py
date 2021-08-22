@@ -107,5 +107,30 @@ def profpic(jwttoken, file):
     print(endpoint)
     # file_type = file.filename.split('.')[1].lower()
     s3.Bucket(aws_bucket_name).put_object(Body = file, Key = endpoint)
+    db_write("""UPDATE circle.Users SET profilepic = %s WHERE (idUsers = %s)""", (endpoint, userID))
+    
 
+def postuno(jwttoken, file):
+    session = boto3.Session(
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key
+    )
+    s3 = session.resource('s3')
+    userID = jwt.decode(jwttoken, JWT_SECRET_KEY, algorithms=['HS256'])['id']
+    print(userID)
+    print(str(secure_filename(file.filename)))
+    endpoint = '{userid}/post/{filename}'.format(userid = userID, filename = str(secure_filename(file.filename)))
+    print(endpoint)
+    # file_type = file.filename.split('.')[1].lower()
+    s3.Bucket(aws_bucket_name).put_object(Body = file, Key = endpoint)
+    db_write("""INSERT INTO circle.Pictures (picture_path, Users_idUsers) VALUES (%s, %s);""", (endpoint, userID))
 
+def getallzeposts(jwttoken):
+    session = boto3.Session(
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key
+    )
+    s3 = session.resource('s3')
+    userID = jwt.decode(jwttoken, JWT_SECRET_KEY, algorithms=['HS256'])['id']
+    all_pics = db_read("""SELECT * FROM circle.Pictures WHERE Users_idUsers = %s""", (userID))
+    print(all_pics)

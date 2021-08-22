@@ -39,12 +39,13 @@ def post():
     else:
         return Response(status=250)
 
-@profile.route("/getallposts", methods=['GET'])
+@profile.route("/getallposts", methods=['POST'])
 def getallposts():
     try:
         getallzeposts(request.headers.get('Authorization'))
         return Response(status = 200)
     except:
         return Response(status = 250)
+
 
 
