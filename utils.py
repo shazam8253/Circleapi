@@ -21,6 +21,8 @@ s3 = boto3.client(
 )
 
 
+
+
 JWT_SECRET_KEY = '$B6cC]UVD@~TMh7P,sb^6w{"t96l,?:aLWXtz(GrQOt7,odlV@3!T\m{Cg$wU4{'
 
 def validate_user_input(input_type, **kwargs):
@@ -126,11 +128,25 @@ def postuno(jwttoken, file):
     db_write("""INSERT INTO circle.Pictures (picture_path, Users_idUsers) VALUES (%s, %s);""", (endpoint, userID))
 
 def getallzeposts(jwttoken):
+    all_images = []
     session = boto3.Session(
         aws_access_key_id=access_key,
         aws_secret_access_key=secret_key
     )
-    s3 = session.resource('s3')
+    s3 = session.client('s3')
     userID = jwt.decode(jwttoken, JWT_SECRET_KEY, algorithms=['HS256'])['id']
     all_pics = db_read("""SELECT * FROM circle.Pictures WHERE Users_idUsers = %s""", (userID))
-    print(all_pics)
+    for x in all_pics: 
+        print(x["picture_path"])
+        url = s3.generate_presigned_url('get_object', Params={'Bucket': aws_bucket_name, 'Key': x["picture_path"]}, ExpiresIn=3600)
+        print("url generated")
+        all_images.append(url)
+    print(all_images)
+    return all_images
+    # s3.Bucket(aws_bucket_name).get_object(Key = endpoint)
+    # print(all_pics)
+
+# url = boto3.client('s3').generate_presigned_url(
+#     ClientMethod='get_object', 
+#     Params={'Bucket': 'BUCKET_NAME', 'Key': 'OBJECT_KEY'},
+#     ExpiresIn=3600)

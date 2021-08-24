@@ -39,11 +39,12 @@ def post():
     else:
         return Response(status=250)
 
-@profile.route("/getallposts", methods=['POST'])
+@profile.route("/getallposts", methods=['GET'])
 def getallposts():
     try:
-        getallzeposts(request.headers.get('Authorization'))
-        return Response(status = 200)
+        end = jsonify({'posts': getallzeposts(request.headers.get('Authorization'))})
+        print(end)
+        return end
     except:
         return Response(status = 250)
 
